@@ -103,25 +103,12 @@ st.markdown("""
 # Load models
 @st.cache_data
 def load_models():
-    import warnings
-    warnings.filterwarnings('ignore', category=UserWarning)
-    
+    import joblib
     try:
-        import joblib
         heart_model = joblib.load('models/heart_model_joblib.pkl')
         kidney_model = joblib.load('models/kidney_pipeline_joblib.pkl')
-        #st.sidebar.success("✅ Models loaded successfully!")
         return heart_model, kidney_model
-    except Exception as e:
-        st.error(f"❌ Error loading models: {e}")
-        st.warning("""
-        **Model Loading Issue Detected**
-        
-        Please run the retraining script to create compatible models:
-        ```bash
-        python retrain_models.py
-        ```
-        """)
+    except Exception:
         return None, None
 
 # Load datasets for visualization
@@ -283,102 +270,83 @@ if prediction_type == "Heart Disease":
 
 elif prediction_type == "Kidney Disease":
     st.markdown('<h2 class="sub-header">🫘 Kidney Disease Prediction</h2>', unsafe_allow_html=True)
-    
-    # Create tabs for different input categories
+
+    # Input tabs
     tab1, tab2, tab3 = st.tabs(["📋 Basic Info", "🔬 Lab Results", "🏥 Medical History"])
-    
+
+    # --- Basic Info ---
     with tab1:
         col1, col2 = st.columns(2)
         with col1:
-            age = st.number_input("Age", min_value=1, max_value=120, value=50, help="Patient's age in years")
-            bp = st.number_input("Blood Pressure", min_value=50, max_value=200, value=80, help="Blood pressure in mm Hg")
-            sg = st.number_input("Specific Gravity", min_value=1.0, max_value=1.1, value=1.02, step=0.01, 
-                                help="Specific gravity of urine")
-            al = st.number_input("Albumin", min_value=0, max_value=5, value=1, help="Albumin level (0-5)")
-            su = st.number_input("Sugar", min_value=0, max_value=5, value=0, help="Sugar level (0-5)")
-        
+            age = st.number_input("Age", 1, 120, 50)
+            bp = st.number_input("Blood Pressure", 50, 200, 80)
+            sg = st.number_input("Specific Gravity", 1.0, 1.1, 1.02, step=0.01)
+            al = st.number_input("Albumin", 0, 5, 1)
+            su = st.number_input("Sugar", 0, 5, 0)
         with col2:
-            rbc = st.selectbox("Red Blood Cells", ["normal", "abnormal"], help="Red blood cell count")
-            pc = st.selectbox("Pus Cells", ["normal", "abnormal"], help="Pus cell presence")
-            pcc = st.selectbox("Pus Cell Clumps", ["notpresent", "present"], help="Pus cell clumps")
-            ba = st.selectbox("Bacteria", ["notpresent", "present"], help="Bacterial presence")
-    
+            rbc = st.selectbox("Red Blood Cells", ["normal", "abnormal"])
+            pc = st.selectbox("Pus Cells", ["normal", "abnormal"])
+            pcc = st.selectbox("Pus Cell Clumps", ["notpresent", "present"])
+            ba = st.selectbox("Bacteria", ["notpresent", "present"])
+
+    # --- Lab Results ---
     with tab2:
         col1, col2 = st.columns(2)
         with col1:
-            bgr = st.number_input("Blood Glucose Random", min_value=50, max_value=500, value=121, 
-                                 help="Random blood glucose level")
-            bu = st.number_input("Blood Urea", min_value=10, max_value=200, value=36, help="Blood urea level")
-            sc = st.number_input("Serum Creatinine", min_value=0.5, max_value=20.0, value=1.2, step=0.1, 
-                                help="Serum creatinine level")
-            sod = st.number_input("Sodium", min_value=100, max_value=200, value=142, help="Sodium level")
-        
+            bgr = st.number_input("Blood Glucose Random", 50, 500, 121)
+            bu = st.number_input("Blood Urea", 10, 200, 36)
+            sc = st.number_input("Serum Creatinine", 0.5, 20.0, 1.2, step=0.1)
+            sod = st.number_input("Sodium", 100, 200, 142)
         with col2:
-            pot = st.number_input("Potassium", min_value=2.0, max_value=8.0, value=4.0, step=0.1, 
-                                 help="Potassium level")
-            hemo = st.number_input("Hemoglobin", min_value=5.0, max_value=20.0, value=15.4, step=0.1, 
-                                  help="Hemoglobin level")
-            pcv = st.number_input("Packed Cell Volume", min_value=20, max_value=60, value=44, 
-                                 help="Packed cell volume")
-            wc = st.number_input("White Blood Cell Count", min_value=2000, max_value=20000, value=7800, 
-                                help="White blood cell count")
-            rc = st.number_input("Red Blood Cell Count", min_value=2.0, max_value=8.0, value=5.2, step=0.1, 
-                                help="Red blood cell count")
-    
+            pot = st.number_input("Potassium", 2.0, 8.0, 4.0, step=0.1)
+            hemo = st.number_input("Hemoglobin", 5.0, 20.0, 15.4, step=0.1)
+            pcv = st.number_input("Packed Cell Volume", 20, 60, 44)
+            wc = st.number_input("White Blood Cell Count", 2000, 20000, 7800)
+            rc = st.number_input("Red Blood Cell Count", 2.0, 8.0, 5.2, step=0.1)
+
+    # --- Medical History ---
     with tab3:
         col1, col2 = st.columns(2)
         with col1:
-            htn = st.selectbox("Hypertension", ["no", "yes"], help="History of hypertension")
-            dm = st.selectbox("Diabetes Mellitus", ["no", "yes"], help="History of diabetes")
-            cad = st.selectbox("Coronary Artery Disease", ["no", "yes"], help="History of CAD")
-            appet = st.selectbox("Appetite", ["good", "poor"], help="Appetite status")
-        
+            htn = st.selectbox("Hypertension", ["no", "yes"])
+            dm = st.selectbox("Diabetes Mellitus", ["no", "yes"])
+            cad = st.selectbox("Coronary Artery Disease", ["no", "yes"])
+            appet = st.selectbox("Appetite", ["good", "poor"])
         with col2:
-            pe = st.selectbox("Pedal Edema", ["no", "yes"], help="Pedal edema presence")
-            ane = st.selectbox("Anemia", ["no", "yes"], help="Anemia presence")
-    
-    # Prediction button
-    if st.button("🔮 Predict Kidney Disease", type="primary", use_container_width=True):
-        # Prepare input data (simplified for demonstration)
-        # Note: You may need to adjust this based on your actual model's preprocessing
+            pe = st.selectbox("Pedal Edema", ["no", "yes"])
+            ane = st.selectbox("Anemia", ["no", "yes"])
+
+    # --- Prediction Button ---
+    if st.button("🔮 Predict Kidney Disease"):
         try:
-            # Create a sample input - you'll need to adjust this based on your model's requirements
-            input_data = pd.DataFrame({
-                'age': [age],
-                'bp': [bp],
-                'sg': [sg],
-                'al': [al],
-                'su': [su],
-                'rbc': [rbc],
-                'pc': [pc],
-                'pcc': [pcc],
-                'ba': [ba],
-                'bgr': [bgr],
-                'bu': [bu],
-                'sc': [sc],
-                'sod': [sod],
-                'pot': [pot],
-                'hemo': [hemo],
-                'pcv': [pcv],
-                'wc': [wc],
-                'rc': [rc],
-                'htn': [htn],
-                'dm': [dm],
-                'cad': [cad],
-                'appet': [appet],
-                'pe': [pe],
-                'ane': [ane]
-            })
-            
-            # Make prediction
+            # Prepare input DataFrame
+            input_data = pd.DataFrame([{
+                'rbc': rbc, 'pc': pc, 'pcc': pcc, 'ba': ba,
+                'htn': htn, 'dm': dm, 'cad': cad, 'appet': appet,
+                'pe': pe, 'ane': ane,
+                'age': age, 'bp': bp, 'sg': sg, 'al': al, 'su': su,
+                'bgr': bgr, 'bu': bu, 'sc': sc, 'sod': sod, 'pot': pot,
+                'hemo': hemo, 'pcv': pcv, 'wc': wc, 'rc': rc
+            }])
+
+            # Correct types
+            cat_cols = ['rbc','pc','pcc','ba','htn','dm','cad','appet','pe','ane']
+            num_cols = ['age','bp','sg','al','su','bgr','bu','sc','sod','pot','hemo','pcv','wc','rc']
+
+            for col in cat_cols:
+                input_data[col] = input_data[col].astype(str).str.lower().str.strip()
+
+            for col in num_cols:
+                input_data[col] = pd.to_numeric(input_data[col], errors='coerce')
+
+            # Predict
             prediction = kidney_model.predict(input_data)[0]
             probability = kidney_model.predict_proba(input_data)[0]
-            
-            # Display results
+
+            # Display
             col1, col2, col3 = st.columns(3)
-            
             with col2:
-                if prediction == 0:  # Assuming 0 = no disease, 1 = disease
+                if prediction == 0:
                     st.markdown('<div class="prediction-card safe-prediction">', unsafe_allow_html=True)
                     st.markdown("### ✅ No Kidney Disease")
                     st.markdown(f"**Confidence:** {probability[0]*100:.1f}%")
@@ -388,23 +356,23 @@ elif prediction_type == "Kidney Disease":
                     st.markdown("### ⚠️ Kidney Disease Detected")
                     st.markdown(f"**Confidence:** {probability[1]*100:.1f}%")
                     st.markdown("</div>", unsafe_allow_html=True)
-            
-            # Show probability breakdown
+
+            # Probability chart
+            import plotly.graph_objects as go
             fig = go.Figure(data=[
-                go.Bar(x=['No Disease', 'Kidney Disease'], y=[probability[0]*100, probability[1]*100],
-                       marker_color=['#4facfe', '#fa709a'])
+                go.Bar(
+                    x=['No Disease', 'Kidney Disease'],
+                    y=[probability[0]*100, probability[1]*100],
+                    marker_color=['#4facfe', '#fa709a']
+                )
             ])
-            fig.update_layout(
-                title="Prediction Probabilities",
-                xaxis_title="Outcome",
-                yaxis_title="Probability (%)",
-                height=400
-            )
+            fig.update_layout(title="Prediction Probabilities", xaxis_title="Outcome", yaxis_title="Probability (%)", height=400)
             st.plotly_chart(fig, use_container_width=True)
-            
+
         except Exception as e:
             st.error(f"Error making prediction: {e}")
-            st.info("Please check if all required fields are filled correctly.")
+            st.info("Please check all fields are filled correctly.")
+
 
 # Data visualization section
 if heart_data is not None and kidney_data is not None:
